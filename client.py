@@ -172,7 +172,7 @@ class Client:
                 while (l):
                     f.write(l)
                     l = self.socket.recv(1024)
-            print("Se guardó una imagen del pokémon capturado en el archivo" + str(idpokemon) + ".png.")
+            print("Se guardó una imagen del pokémon capturado en el archivo " + str(idpokemon) + ".png.")
             f.close()
         else:
             raise Exception("Esperaba CAPTURED_POKEMON.")
