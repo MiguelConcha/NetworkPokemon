@@ -42,7 +42,7 @@ class Client:
         if bytes_2_int(reply) == WELCOME:
             print(welcome_banner)
 
-    def receive_playing_question(self):
+    def commence_protocol(self):
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == PLAYING_QUESTION:
             answer_from_client = ""
@@ -68,7 +68,7 @@ class Client:
             print("ok")
 
     def confirmed_id(self, decision, first):
-        self.socket.sendall(pack('B', decision))
+        self.socket.sendall(pack('B', CHOSEN_ID) + pack('B', decision))
         print("Mandando ID...")
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == ID_NOT_FOUND:
@@ -78,12 +78,43 @@ class Client:
         elif bytes_2_int(reply) == YES:
             if not first: 
                 print("El ID fue encontrado en la base de datos.")
+                self.input_password()
             return True
         elif bytes_2_int(reply) == ACTIVE_USER:
             if not first:
                 print("El ID del usuario corresponde a un entrenador que ya está activo.")
             return False
-        print("angel")
+
+    def input_password(self):
+        first = True
+        password = ""
+        while not self.password_confirmed(password, first):
+            password = input("Contraseña: ")
+            first = False
+            
+    def password_confirmed(self, password, first):
+        self.socket.sendall(pack('B', PASSWORD) + password.encode())
+        reply = self.socket.recv(1)
+        print("Recibí respuesta")
+        if bytes_2_int(reply) == PASS_NO_MATCH:
+            if not first:
+                print("No coincide la contraseña.")
+            return False
+        elif bytes_2_int(reply) == YES:
+            if not first:
+                print("Estás dentro.")
+                self.request_capturing()
+            return True
+
+    def request_capturing(self):
+        self.socket.sendall(pack('B', REQUEST_CAPTURING))
+        self.receive_pokemon_suggestion()
+
+    def receive_pokemon_suggestion(self):
+        reply = self.socket.recv(2)
+        if reply[0] == CAPTURING_VERIFICATION:
+            print("Quieres capturar al pokemón " + map(reply[1]) + "?")
+        raise Exception("Esperaba CAPTURING_VERIFICATION")
 
     def receive_session_termination(self):
         reply = self.socket.recv(1)
@@ -103,5 +134,6 @@ if __name__ == '__main__':
     client.connect()
     
     client.receive_welcome()
-    client.receive_playing_question()
+    client.commence_protocol()
+
     
