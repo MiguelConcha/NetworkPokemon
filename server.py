@@ -4,7 +4,8 @@ from message_codes import *
 from _thread import *
 from struct import pack
 
-DB = {1 : {'Trainer' : "Paulo Contreras Flores",
+DB_users = {
+      1 : {'Trainer' : "Paulo Contreras Flores",
            'Password' : "paulo",
            'Active': False},
       2 : {'Trainer' : "Virgilio Castro Rendón",
@@ -22,6 +23,8 @@ DB = {1 : {'Trainer' : "Paulo Contreras Flores",
       6 : {'Trainer' : "Miguel Concha Vázquez",
            'Password' : "miguel",
            'Active': False}}
+
+	  #DB_pokemon = {1 : 
 
 class Server:
 
@@ -53,7 +56,7 @@ def transmit(conn, message):
     conn.sendall(message)
 
 def get_trainers():
-    return "\n".join([str(k) + " : " + v["Trainer"] for k,v in DB.items()])
+    return "\n".join([str(k) + " : " + v["Trainer"] for k,v in DB_users.items()])
 
 def send_welcome_message(conn):
     transmit(conn, pack('B', WELCOME))
@@ -71,8 +74,16 @@ def send_trainers(conn):
     transmit(conn, pack('B', TRAINER_LIST) + get_trainers().encode())
 
 def get_user_id(conn):
-    user_id = conn.recv(1)
-    return bytes_2_int(user_id)
+    user_id = conn.recv(2)
+    if user_id[0] == CHOSEN_ID:
+        return user_id[1]
+    raise Exception("Esperaba chosen id")
+
+def get_user_pwd(conn):#return a string
+    user_pwd = conn.recv(1024)
+    if user_pwd[0] == PASSWORD:
+        return user_pwd[1:].decode()
+    raise Exception("Esperaba PASSWORD")
 
 def send_id_no_encontrado(conn):
     transmit(conn, pack('B', ID_NOT_FOUND))
@@ -80,8 +91,17 @@ def send_id_no_encontrado(conn):
 def send_active_user(conn):
     transmit(conn, pack('B', ACTIVE_USER))
 
-def send_id_found(conn):
+def send_confirmation(conn):
     transmit(conn, pack('B', YES))
+
+def send_pass_no_match(conn):
+    transmit(conn, pack('B', PASS_NO_MATCH))
+
+def get_solicitud(conn):
+    solicitud = conn.recv(1)
+    return solicitud
+
+
 
 def clientthread(conn):
     """
@@ -93,19 +113,39 @@ def clientthread(conn):
     send_welcome_message(conn)
     send_pregunta_juego(conn)
     to_play =  get_answer_to_play(conn)
+    user_id = -1
     if to_play == YES:
         send_trainers(conn)
+        ### GET USER FROM CLIENT
         user_id = get_user_id(conn)
-        while user_id not in DB.keys() or DB[user_id]["Active"]:
-            print(user_id)
-            if user_id not in DB.keys():
+        while user_id not in DB_users.keys() or DB_users[user_id]["Active"]:
+            if user_id not in DB_users.keys():
                 send_id_no_encontrado(conn)
-            elif DB[user_id]["Active"]:
+            elif DB_users[user_id]["Active"]:
                 send_active_user(conn)
             user_id = get_user_id(conn)
-        DB[user_id]["Active"] = True
-        send_id_found(conn)
+        DB_users[user_id]["Active"] = True
+        send_confirmation(conn)
 
+        ### GET PASSWD FROM CLIENT
+        user_pwd  = get_user_pwd(conn)
+        while not DB_users[user_id]["Password"] == user_pwd:
+            send_pass_no_match(conn)
+            user_pwd = get_user_pwd(conn)
+        send_confirmation(conn)
+
+        # INICIA CAPTURA DE POKEMON
+
+        solicitud = get_solicitud(conn)
+        if solicitud == REQUEST_CAPTURING:
+            pass
+
+
+
+
+
+        #YA SE VA A ACABAR LA CONEXION
+        DB_users[user_id]["Active"] = False
     elif to_play == NO:
         print("no quiere jugar")
         terminate_session(conn)
