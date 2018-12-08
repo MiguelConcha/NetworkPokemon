@@ -3,6 +3,7 @@ import sys
 from message_codes import *
 from _thread import *
 from struct import pack
+from random import randint
 
 DB_users = {
       1 : {'Trainer' : "Paulo Contreras Flores",
@@ -24,7 +25,21 @@ DB_users = {
            'Password' : "miguel",
            'Active': False}}
 
-	  #DB_pokemon = {1 : 
+DB_pokemon = {
+        1 : ("pikachu", "Pokémons/1.jpg"),
+        2 : ("charizard", "Pokémons/2.jpg"),
+        3 : ("mewtwo", "Pokémons/3.jpg"),
+        4 : ("bulbasaur", "Pokémons/4.jpg"),
+        5 : ("charizard", "Pokémons/5.jpg"),
+        6 : ("blastoise", "Pokémons/6.jpg"),
+        7 : ("caterpie", "Pokémons/7.jpg"),
+        8 : ("rattata", "Pokémons/8.jpg"),
+        9 : ("pidgeot", "Pokémons/9.jpg"),
+        10 : ("oddish", "Pokémons/10.jpg")
+}
+
+
+              
 
 class Server:
 
@@ -77,7 +92,7 @@ def get_user_id(conn):
     user_id = conn.recv(2)
     if user_id[0] == CHOSEN_ID:
         return user_id[1]
-    raise Exception("Esperaba chosen id")
+    raise Exception("Esperaba choosen id")
 
 def get_user_pwd(conn):#return a string
     user_pwd = conn.recv(1024)
@@ -99,7 +114,14 @@ def send_pass_no_match(conn):
 
 def get_solicitud(conn):
     solicitud = conn.recv(1)
-    return solicitud
+    return bytes_2_int(solicitud)
+
+def choose_random_pokemon():
+    return randint(1, len(DB_pokemon))
+
+def send_pokemon_info(conn, pokemon_row):
+    info = pack('B', CAPTURING_VERIFICATION) + pack('B', pokemon_row) + DB_pokemon[pokemon_row][0].encode()
+    transmit(conn, info)
 
 
 
@@ -137,8 +159,10 @@ def clientthread(conn):
         # INICIA CAPTURA DE POKEMON
 
         solicitud = get_solicitud(conn)
+        print(solicitud)
         if solicitud == REQUEST_CAPTURING:
-            pass
+            pokemon_row = choose_random_pokemon()
+            send_pokemon_info(conn, pokemon_row)
 
 
 
