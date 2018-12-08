@@ -1,4 +1,5 @@
 import socket
+import os
 import sys
 from message_codes import *
 from _thread import *
@@ -8,34 +9,40 @@ from random import randint
 DB_users = {
       1 : {'Trainer' : "Paulo Contreras Flores",
            'Password' : "paulo",
-           'Active': False},
+           'Active': False,
+           'Catched': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
       2 : {'Trainer' : "Virgilio Castro Rendón",
            'Password' : "virgilio",
-           'Active': False},
+           'Active': False,
+           'Catched': [1,2,3,4,5,6,7,8,9]},
       3 : {'Trainer' : "José Daniel Campuzano Barajas",
            'Password' : "daniel",
-           'Active': False},
+           'Active': False,
+           'Catched': []},
       4 : {'Trainer' : "Andrés Flores Martínez",
            'Password' : "andres",
-           'Active': False},
+           'Active': False,
+           'Catched': []},
       5 : {'Trainer' : "Ángel Iván Gladín García",
            'Password' : "angel",
-           'Active': False},
+           'Active': False,
+           'Catched': []},
       6 : {'Trainer' : "Miguel Concha Vázquez",
            'Password' : "miguel",
-           'Active': False}}
+           'Active': False,
+           'Catched': []}}
 
 DB_pokemon = {
-        1 : ("pikachu", "Pokémons/1.jpg"),
-        2 : ("charizard", "Pokémons/2.jpg"),
-        3 : ("mewtwo", "Pokémons/3.jpg"),
-        4 : ("bulbasaur", "Pokémons/4.jpg"),
-        5 : ("charizard", "Pokémons/5.jpg"),
-        6 : ("blastoise", "Pokémons/6.jpg"),
-        7 : ("caterpie", "Pokémons/7.jpg"),
-        8 : ("rattata", "Pokémons/8.jpg"),
-        9 : ("pidgeot", "Pokémons/9.jpg"),
-        10 : ("oddish", "Pokémons/10.jpg")
+        1 : ("pikachu", "Pokémons/1.png"),
+        2 : ("charizard", "Pokémons/2.png"),
+        3 : ("mewtwo", "Pokémons/3.png"),
+        4 : ("bulbasaur", "Pokémons/4.png"),
+        5 : ("charizard", "Pokémons/5.png"),
+        6 : ("blastoise", "Pokémons/6.png"),
+        7 : ("caterpie", "Pokémons/7.png"),
+        8 : ("rattata", "Pokémons/8.png"),
+        9 : ("pidgeot", "Pokémons/9.png"),
+        10 : ("oddish", "Pokémons/10.png")
 }
 
 
@@ -79,7 +86,7 @@ def send_welcome_message(conn):
 def send_pregunta_juego(conn):
     transmit(conn, pack('B', PLAYING_QUESTION))
 
-def get_answer_to_play(conn):
+def get_bool_answer(conn):
     return bytes_2_int(conn.recv(1))
 
 def terminate_session(conn):
@@ -123,6 +130,89 @@ def send_pokemon_info(conn, pokemon_row):
     info = pack('B', CAPTURING_VERIFICATION) + pack('B', pokemon_row) + DB_pokemon[pokemon_row][0].encode()
     transmit(conn, info)
 
+def send_all_catched(conn):
+    transmit(conn, pack('B', ALREADY_HAVE_ALL))
+
+def send_already_have(conn):
+    transmit(conn, pack('B', ALREADY_HAVE_POKEMON))
+
+def send_not_have(conn):
+    transmit(conn, pack('B', DO_NOT_HAVE_POKEMON))
+
+def terminate(conn):
+    for k,v in DB_users.items():
+        print(k, v)
+    terminate_session(conn)
+    conn.close()
+
+def send_attempts(conn, n, pokemon_id):
+    package = pack('B', REMAINING_ATTEMPTS) + pack('B', pokemon_id) + pack('B', n)
+    transmit(conn, package)
+
+def send_successful_capture(conn):
+    transmit(conn, pack('B', CAPTURED_POKEMON))
+
+def send_ran_out_of_attempts(conn):
+    transmit(conn, pack('B', NO_MORE_ATTEMPTS))
+
+def send_image(conn, pokemon_row):
+    f = open(DB_pokemon[pokemon_row][1], "rb")
+	#tam_image = str(os.stat(DB_pokemon[pokemon_row][1]).st_size)
+	#print("el tama;o", tam_image)
+	#tam_entries = len(tam_image)
+    l = f.read(1024)
+	#print(l)
+    image = l#pack('B', l)
+    while (l):
+        l = f.read(1024)
+        image += l
+    package = pack('B', CAPTURED_POKEMON) + pack('B', pokemon_row) + image
+    transmit(conn, package)
+    
+    
+    
+
+def capture_pokemon(conn, user_id):
+    pokemon_row = choose_random_pokemon()
+    send_pokemon_info(conn, pokemon_row)
+    answer = get_bool_answer(conn)
+    if answer == YES:
+        if len(DB_users[user_id]["Catched"]) == len(DB_pokemon):
+            send_all_catched(conn)
+            terminate(conn)
+        elif pokemon_row in DB_users[user_id]["Catched"]:
+            send_already_have(conn)
+            capture_pokemon(conn, user_id)
+        else:
+            send_not_have(conn)
+            captured = False
+            max_attempts = randint(2, 10)
+            while not captured and max_attempts > 0:
+                captured = randint(0, 2) == 1
+                max_attempts -= 1
+                if not captured:
+                    send_attempts(conn, max_attempts, pokemon_row)
+                    try_again = get_bool_answer(conn)
+                    if try_again == NO:
+                        break
+                else:
+                    send_successful_capture(conn)
+            if not captured and try_again == YES:
+                send_ran_out_of_attempts(conn)
+                terminate(conn)
+            elif not captured:
+                terminate(conn)
+            else:
+                print("capturado y a terminar")
+                DB_users[user_id]["Catched"].append(pokemon_row)
+                #ENVIAR IMAGEN Y REGISTRAR POKEMON
+                send_image(conn, pokemon_row)
+                transmit(conn, pack('B', TERMINATED_SESSION))
+                conn.close()
+                pass
+
+    elif answer == NO:
+        terminate(conn)
 
 
 def clientthread(conn):
@@ -134,7 +224,7 @@ def clientthread(conn):
     """
     send_welcome_message(conn)
     send_pregunta_juego(conn)
-    to_play =  get_answer_to_play(conn)
+    to_play =  get_bool_answer(conn)
     user_id = -1
     if to_play == YES:
         send_trainers(conn)
@@ -159,21 +249,14 @@ def clientthread(conn):
         # INICIA CAPTURA DE POKEMON
 
         solicitud = get_solicitud(conn)
-        print(solicitud)
         if solicitud == REQUEST_CAPTURING:
-            pokemon_row = choose_random_pokemon()
-            send_pokemon_info(conn, pokemon_row)
-
-
-
-
+            capture_pokemon(conn, user_id)
 
         #YA SE VA A ACABAR LA CONEXION
         DB_users[user_id]["Active"] = False
     elif to_play == NO:
         print("no quiere jugar")
-        terminate_session(conn)
-        conn.close()
+        terminate(conn)
         print("se cerró la conexión")
         
     
