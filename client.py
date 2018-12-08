@@ -108,23 +108,98 @@ class Client:
 
     def request_capturing(self):
         self.socket.sendall(pack('B', REQUEST_CAPTURING))
+        print("ya mande solicitud")
         self.receive_pokemon_suggestion()
 
     def receive_pokemon_suggestion(self):
-        reply = self.socket.recv(2)
+        reply = self.socket.recv(1024)
         if reply[0] == CAPTURING_VERIFICATION:
-            print("Quieres capturar al pokemón " + map(reply[1]) + "?")
-        raise Exception("Esperaba CAPTURING_VERIFICATION")
+            answer = ""
+            while answer != "y" and answer != "n":
+                answer = input("Quieres capturar al pokemón " + reply[2:].decode() + "? (y/n): ")
+            self.send_capturing_answer(answer)
+        else:
+            raise Exception("Esperaba CAPTURING_VERIFICATION")
+
+    def send_capturing_answer(self, answer):
+        if answer == "y":
+            self.socket.sendall(pack('B', YES))
+            self.receive_capturing_validation()
+        elif answer == "n":
+            self.socket.sendall(pack('B', NO))
+            self.receive_session_termination()
+
+    def receive_capturing_validation(self):
+        reply = self.socket.recv(1)
+        if bytes_2_int(reply) == ALREADY_HAVE_ALL:
+            print("Ya tenías todos los pokémones. Has completado el juego.")
+            self.receive_session_termination()
+
+        elif bytes_2_int(reply) == ALREADY_HAVE_POKEMON:
+            print("Ya tienes el pokémon sugerido. Intentaré encontrarte otro.")
+            self.receive_pokemon_suggestion()
+
+        elif bytes_2_int(reply) == DO_NOT_HAVE_POKEMON:
+            print("Tu pokédex no reconoce a este pokémon. Intenta capturarlo!")
+            captured = False
+            while not captured:
+                captured = self.verify_capture()
+                if captured: 
+                    break
+                again = ""
+                while again != "y" and again != "n":
+                    again = input("Quieres tratar de nuevo? (y/n): ")
+                if again == "n":
+                    self.socket.sendall(pack('B', NO))
+                    self.receive_session_termination()
+                elif again == "y":
+                    self.socket.sendall(pack('B', YES))
+            if captured:
+                print("Lo capturaste")
+                # imagen
+                self.receive_image()
+                self.receive_session_termination()
+
+    def receive_image(self):
+        code = self.socket.recv(1)
+        if bytes_2_int(code) == CAPTURED_POKEMON:
+            idpokemon = bytes_2_int(self.socket.recv(1))
+            #tam_image = self.socket.recv(4)
+            f = open(str(idpokemon)+".png",'wb')
+            l = 1
+            while(l):
+                l = self.socket.recv(1024)
+                while (l):
+                    f.write(l)
+                    l = self.socket.recv(1024)
+            print("Se guardó una imagen del pokémon capturado en el archivo" + str(idpokemon) + ".png.")
+            f.close()
+        else:
+            raise Exception("Esperaba CAPTURED_POKEMON.")
+
+    def verify_capture(self):
+        reply = self.socket.recv(3)
+        if reply[0] == REMAINING_ATTEMPTS:
+            print("No lo capturaste. Te quedan " + str(reply[-1])  + " intentos.")
+            return False
+        elif reply[0] == CAPTURED_POKEMON:
+            return True
+        elif reply[0] == NO_MORE_ATTEMPTS:
+            print("Se acabaron los intentos.")
+            self.receive_session_termination()
 
     def receive_session_termination(self):
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == TERMINATED_SESSION:
             print("Sesión terminada.")
             self.close_connection()
+        else:
+            print("esta mal")
 
     def close_connection(self):
         self.socket.close()
         print("Conexión cerrada.")
+        exit()
 
 if __name__ == '__main__':
     
@@ -135,5 +210,3 @@ if __name__ == '__main__':
     
     client.receive_welcome()
     client.commence_protocol()
-
-    
