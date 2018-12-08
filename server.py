@@ -75,6 +75,7 @@ class Server:
             start_new_thread(clientthread, (conn,))
     
 def transmit(conn, message):
+    print("envio ", message)
     conn.sendall(message)
 
 def get_trainers():
@@ -157,16 +158,18 @@ def send_ran_out_of_attempts(conn):
 
 def send_image(conn, pokemon_row):
     f = open(DB_pokemon[pokemon_row][1], "rb")
-	#tam_image = str(os.stat(DB_pokemon[pokemon_row][1]).st_size)
-	#print("el tama;o", tam_image)
-	#tam_entries = len(tam_image)
+    #tam_image = str(os.stat(DB_pokemon[pokemon_row][1]).st_size)
+    #print("el tama;o", tam_image)
+    #tam_entries = len(tam_image)
     l = f.read(1024)
-	#print(l)
+    #print(l)
     image = l#pack('B', l)
     while (l):
         l = f.read(1024)
         image += l
     package = pack('B', CAPTURED_POKEMON) + pack('B', pokemon_row) + image
+    print(bytes_2_int(package))
+    print(package)
     transmit(conn, package)
     
     
@@ -187,8 +190,9 @@ def capture_pokemon(conn, user_id):
             send_not_have(conn)
             captured = False
             max_attempts = randint(2, 10)
-            while not captured and max_attempts > 0:
+            while not captured and max_attempts > 1:
                 captured = randint(0, 2) == 1
+                print("lo captura" , captured)
                 max_attempts -= 1
                 if not captured:
                     send_attempts(conn, max_attempts, pokemon_row)
