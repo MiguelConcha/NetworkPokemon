@@ -40,6 +40,7 @@ class Client:
     def receive_welcome(self):
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == WELCOME:
+            print("dejdekjde")
             print(welcome_banner)
 
     def commence_protocol(self):
@@ -65,7 +66,6 @@ class Client:
                 decision = int(input("Elige el ID de usuario que te corresponde: "))
                 if first:
                     first = False
-            print("ok")
 
     def confirmed_id(self, decision, first):
         self.socket.sendall(pack('B', CHOSEN_ID) + pack('B', decision))
@@ -158,25 +158,32 @@ class Client:
                 print("Lo capturaste")
                 # imagen
                 self.receive_image()
+                #self.send_reception_image()
                 self.receive_session_termination()
+
+    def send_reception_image(self):
+        print("voy a enviar")
+
+        self.socket.sendall(pack('B', IMAGE_RECEIVED))
+        print("ya envié", str(IMAGE_RECEIVED))
 
     def receive_image(self):
         code = self.socket.recv(1)
-        if bytes_2_int(code) == CAPTURED_POKEMON:
-            idpokemon = bytes_2_int(self.socket.recv(1))
-            #tam_image = self.socket.recv(4)
-            f = open(str(idpokemon)+".png",'wb')
-            l = 1
-            while(l):
-                l = self.socket.recv(1024)
-                while (l):
-                    f.write(l)
-                    l = self.socket.recv(1024)
-            print("Se guardó una imagen del pokémon capturado en el archivo " + str(idpokemon) + ".png.")
-            f.close()
-        else:
-            raise Exception("Esperaba CAPTURED_POKEMON.")
-
+        idpokemon = bytes_2_int(self.socket.recv(1))
+        #tam_image = self.socket.recv(4)
+        f = open(str(idpokemon)+".png",'wb')
+        l = 1
+        while(l):
+            l = self.socket.recv(1024)
+            #while (l):
+            f.write(l)
+            #l = self.socket.recv(1024)
+        print("Se guardó una imagen del pokémon capturado en el archivo " + str(idpokemon) + ".png.")
+        f.close()
+        print("Sesión terminada.")
+        reply = self.socket.recv(1)
+        self.close_connection()
+ 
     def verify_capture(self):
         reply = self.socket.recv(3)
         if reply[0] == REMAINING_ATTEMPTS:
@@ -186,15 +193,17 @@ class Client:
             return True
         elif reply[0] == NO_MORE_ATTEMPTS:
             print("Se acabaron los intentos.")
-            self.receive_session_termination()
+            reply = self.socket.recv(1)
+            self.close_connection()
 
     def receive_session_termination(self):
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == TERMINATED_SESSION:
+            print(reply)
             print("Sesión terminada.")
             self.close_connection()
         else:
-            print("esta mal")
+            raise Exception("Esperaba TERMINATION")
 
     def close_connection(self):
         self.socket.close()

@@ -18,6 +18,7 @@ PASS_NO_MATCH = 42
 ALREADY_HAVE_POKEMON = 43
 ALREADY_HAVE_ALL = 44
 ACTIVE_USER = 45
+IMAGE_RECEIVED = 33
 
 def bytes_2_int(byte_repr):
     return int.from_bytes(byte_repr, byteorder='little', signed=True)
