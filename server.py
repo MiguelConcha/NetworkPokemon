@@ -58,7 +58,7 @@ class Server:
     def bind_socket(self):
         try:
             self.socket.bind((self.host, self.port))
-            self.socket.settimeout(60)
+            self.socket.settimeout(600)
         except socket.error:
             print("Error en el binding.")
             sys.exit()
@@ -168,9 +168,10 @@ def send_image(conn, pokemon_row):
         l = f.read(1024)
         image += l
     package = pack('B', CAPTURED_POKEMON) + pack('B', pokemon_row) + image
+    transmit(conn, package)
+    f.close()
     print(bytes_2_int(package))
     print(package)
-    transmit(conn, package)
     
     
     
@@ -211,15 +212,20 @@ def capture_pokemon(conn, user_id):
                 DB_users[user_id]["Catched"].append(pokemon_row)
                 #ENVIAR IMAGEN Y REGISTRAR POKEMON
                 send_image(conn, pokemon_row)
+                #conf = conn.recv(1)
+                #print(conf)
                 transmit(conn, pack('B', TERMINATED_SESSION))
                 conn.close()
                 pass
 
     elif answer == NO:
-        terminate(conn)
+        conn.sendall(pack('B', TERMINATED_SESSION))
+        conn.close()
+        #terminate(conn)
 
 
 def clientthread(conn):
+
     """
     msg = "hola\n"
     transmit(conn, msg.encode())
@@ -228,7 +234,7 @@ def clientthread(conn):
     """
     send_welcome_message(conn)
     send_pregunta_juego(conn)
-    to_play =  get_bool_answer(conn)
+    to_play = get_bool_answer(conn)
     user_id = -1
     if to_play == YES:
         send_trainers(conn)
@@ -260,7 +266,10 @@ def clientthread(conn):
         DB_users[user_id]["Active"] = False
     elif to_play == NO:
         print("no quiere jugar")
-        terminate(conn)
+        #terminate(conn)
+        pac = pack('B', 32)
+        conn.sendall(pack('B', 32))
+        conn.close()
         print("se cerró la conexión")
         
     
