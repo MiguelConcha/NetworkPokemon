@@ -96,6 +96,11 @@ class Client:
             self.close_connection()
             print("Ocurrió un error de transporte con el socket.")
 
+    def verify_img_code(self, code):
+        if bytes_2_int(code) == -119:
+            self.close_connection()
+            print("Ocurrió un error de transporte con el socket.")
+
     def input_password(self):
         first = True
         password = ""
@@ -192,6 +197,7 @@ class Client:
 
     def receive_image(self):
         code = self.socket.recv(1)
+        self.verify_img_code(code)
         print("code", code)
         if code[0] == TIMEOUT:
             print("Ocurrió un timeout en la conexión")
@@ -199,6 +205,7 @@ class Client:
         idpokemon = bytes_2_int(self.socket.recv(1))
         self.verify_pokemon(idpokemon)
         print("id", idpokemon)
+        tam_image = bytes_2_int(self.socket.recv(4))
         #tam_image = self.socket.recv(4)
         f = open(str(idpokemon)+".png",'wb')
         l = 1
