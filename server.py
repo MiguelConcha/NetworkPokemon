@@ -143,8 +143,8 @@ def send_ran_out_of_attempts(conn):
 
 def send_image(conn, pokemon_row):
     f = open(DB_pokemon[pokemon_row][1], "rb")
-    #tam_image = str(os.stat(DB_pokemon[pokemon_row][1]).st_size)
-    #print("el tama;o", tam_image)
+    tam_image = os.stat(DB_pokemon[pokemon_row][1]).st_size
+    pack_tam = pack("<L", tam_image)
     #tam_entries = len(tam_image)
     l = f.read(1024)
     #print(l)
@@ -152,10 +152,9 @@ def send_image(conn, pokemon_row):
     while (l):
         l = f.read(1024)
         image += l
-    package = pack('B', CAPTURED_POKEMON) + pack('B', pokemon_row) + image
+    package = pack('B', CAPTURED_POKEMON) + pack('B', pokemon_row) + pack_tam + image
     transmit(conn, package)
     f.close()
-    print(bytes_2_int(package))
     print(package)
     
 def send_captured_pokemons(conn, id_user):
