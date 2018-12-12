@@ -92,7 +92,7 @@ class Client:
             return False
 
     def verify_pokemon(self, id_p):
-        if id_p > 9:
+        if id_p > 9 or id_p < 1:
             self.close_connection()
             print("Ocurrió un error de transporte con el socket.")
 
