@@ -5,44 +5,30 @@ from message_codes import *
 from _thread import *
 from struct import pack
 from random import randint
+from socket import timeout
+import pickle
 
-DB_users = {
-      1 : {'Trainer' : "Paulo Contreras Flores",
-           'Password' : "paulo",
-           'Active': False,
-           'Catched': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]},
-      2 : {'Trainer' : "Virgilio Castro Rendón",
-           'Password' : "virgilio",
-           'Active': False,
-           'Catched': [1,2,3,4,5,6,7,8,9]},
-      3 : {'Trainer' : "José Daniel Campuzano Barajas",
-           'Password' : "daniel",
-           'Active': False,
-           'Catched': []},
-      4 : {'Trainer' : "Andrés Flores Martínez",
-           'Password' : "andres",
-           'Active': False,
-           'Catched': []},
-      5 : {'Trainer' : "Ángel Iván Gladín García",
-           'Password' : "angel",
-           'Active': False,
-           'Catched': []},
-      6 : {'Trainer' : "Miguel Concha Vázquez",
-           'Password' : "miguel",
-           'Active': False,
-           'Catched': []}}
+def load_obj(name):
+    with open('DB/' + name + '.pkl', 'rb') as f:
+        return pickle.load(f)
+
+def save_obj(obj, name):
+    with open('DB/'+ name + '.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+DB_users = load_obj("db")
+print(DB_users)
 
 DB_pokemon = {
         1 : ("pikachu", "Pokémons/1.png"),
         2 : ("charizard", "Pokémons/2.png"),
         3 : ("mewtwo", "Pokémons/3.png"),
         4 : ("bulbasaur", "Pokémons/4.png"),
-        5 : ("charizard", "Pokémons/5.png"),
+        5 : ("squirtle", "Pokémons/5.png"),
         6 : ("blastoise", "Pokémons/6.png"),
         7 : ("caterpie", "Pokémons/7.png"),
-        8 : ("rattata", "Pokémons/8.png"),
-        9 : ("pidgeot", "Pokémons/9.png"),
-        10 : ("oddish", "Pokémons/10.png")
+        8 : ("pidgeot", "Pokémons/8.png"),
+        9 : ("oddish", "Pokémons/9.png")
 }
 
 
@@ -58,7 +44,7 @@ class Server:
     def bind_socket(self):
         try:
             self.socket.bind((self.host, self.port))
-            self.socket.settimeout(600)
+            #self.socket.settimeout(600)
         except socket.error:
             print("Error en el binding.")
             sys.exit()
@@ -71,6 +57,7 @@ class Server:
     def serve(self):
         while True:
             conn, addr = self.socket.accept()
+            conn.settimeout(60)
             print("Conexión con: " + addr[0] + ":" + str(addr[1]))
             start_new_thread(clientthread, (conn,))
     
@@ -141,8 +128,6 @@ def send_not_have(conn):
     transmit(conn, pack('B', DO_NOT_HAVE_POKEMON))
 
 def terminate(conn):
-    for k,v in DB_users.items():
-        print(k, v)
     terminate_session(conn)
     conn.close()
 
@@ -173,6 +158,8 @@ def send_image(conn, pokemon_row):
     print(bytes_2_int(package))
     print(package)
     
+def send_captured_pokemons(conn, id_user):
+    transmit(conn, pack('B', POKEMON_LIST) + ' '.join(DB_users[id_user]['Catched']).encode())
     
     
 
@@ -190,9 +177,9 @@ def capture_pokemon(conn, user_id):
         else:
             send_not_have(conn)
             captured = False
-            max_attempts = randint(2, 10)
+            max_attempts = 15#randint(2, 10)
             while not captured and max_attempts > 1:
-                captured = randint(0, 2) == 1
+                captured = True #randint(0, 2) == 1
                 print("lo captura" , captured)
                 max_attempts -= 1
                 if not captured:
@@ -209,7 +196,8 @@ def capture_pokemon(conn, user_id):
                 terminate(conn)
             else:
                 print("capturado y a terminar")
-                DB_users[user_id]["Catched"].append(pokemon_row)
+                DB_users[user_id]["Catched"].append(DB_pokemon[pokemon_row][0])
+                save_obj(DB_users, "db")
                 #ENVIAR IMAGEN Y REGISTRAR POKEMON
                 send_image(conn, pokemon_row)
                 #conf = conn.recv(1)
@@ -232,46 +220,56 @@ def clientthread(conn):
     clientreply = conn.recv(1024).decode()
     print(clientreply)
     """
-    send_welcome_message(conn)
-    send_pregunta_juego(conn)
-    to_play = get_bool_answer(conn)
-    user_id = -1
-    if to_play == YES:
-        send_trainers(conn)
-        ### GET USER FROM CLIENT
-        user_id = get_user_id(conn)
-        while user_id not in DB_users.keys() or DB_users[user_id]["Active"]:
-            if user_id not in DB_users.keys():
-                send_id_no_encontrado(conn)
-            elif DB_users[user_id]["Active"]:
-                send_active_user(conn)
+    try:
+        send_welcome_message(conn)
+        send_pregunta_juego(conn)
+        to_play = get_bool_answer(conn)
+        user_id = -1
+        if to_play == YES:
+            send_trainers(conn)
+            ### GET USER FROM CLIENT
             user_id = get_user_id(conn)
-        DB_users[user_id]["Active"] = True
-        send_confirmation(conn)
+            while user_id not in DB_users.keys() or DB_users[user_id]["Active"]:
+                if user_id not in DB_users.keys():
+                    send_id_no_encontrado(conn)
+                elif DB_users[user_id]["Active"]:
+                    send_active_user(conn)
+                user_id = get_user_id(conn)
+            DB_users[user_id]["Active"] = True
+            save_obj(DB_users, "db")
+            send_confirmation(conn)
 
-        ### GET PASSWD FROM CLIENT
-        user_pwd  = get_user_pwd(conn)
-        while not DB_users[user_id]["Password"] == user_pwd:
-            send_pass_no_match(conn)
-            user_pwd = get_user_pwd(conn)
-        send_confirmation(conn)
+            ### GET PASSWD FROM CLIENT
+            user_pwd  = get_user_pwd(conn)
+            while not DB_users[user_id]["Password"] == user_pwd:
+                send_pass_no_match(conn)
+                user_pwd = get_user_pwd(conn)
+            send_confirmation(conn)
 
-        # INICIA CAPTURA DE POKEMON
+            send_captured_pokemons(conn, user_id)
+            # INICIA CAPTURA DE POKEMON
 
-        solicitud = get_solicitud(conn)
-        if solicitud == REQUEST_CAPTURING:
-            capture_pokemon(conn, user_id)
+            solicitud = get_solicitud(conn)
+            if solicitud == REQUEST_CAPTURING:
+                capture_pokemon(conn, user_id)
 
-        #YA SE VA A ACABAR LA CONEXION
-        DB_users[user_id]["Active"] = False
-    elif to_play == NO:
-        print("no quiere jugar")
-        #terminate(conn)
-        pac = pack('B', 32)
-        conn.sendall(pack('B', 32))
+            #YA SE VA A ACABAR LA CONEXION
+            DB_users[user_id]["Active"] = False
+            print("local false", DB_users)
+            save_obj(DB_users, "db")
+            print("save false", load_obj("db"))
+        elif to_play == NO:
+            print("no quiere jugar")
+            #terminate(conn)
+            pac = pack('B', 32)
+            conn.sendall(pack('B', 32))
+            conn.close()
+            print("se cerró la conexión")
+    except timeout:
+        transmit(conn, pack('B', TIMEOUT))
         conn.close()
-        print("se cerró la conexión")
-        
+        print("timeout")
+            
     
 
 if __name__ == '__main__':
