@@ -40,12 +40,12 @@ class Client:
     def receive_welcome(self):
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == WELCOME:
-            print("dejdekjde")
             print(welcome_banner)
 
     def commence_protocol(self):
         reply = self.socket.recv(1)
-        if bytes_2_int(reply) == PLAYING_QUESTION:
+        reply = bytes_2_int(reply)
+        if reply == PLAYING_QUESTION:
             answer_from_client = ""
             while answer_from_client != "y" and answer_from_client != "n":
                 answer_from_client = input("Quieres capturar un pokémon? (y/n): ")
@@ -58,6 +58,9 @@ class Client:
 
     def receive_list(self):
         reply = self.socket.recv(4096)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         if reply[0] == TRAINER_LIST:
             decision = 100
             first = True
@@ -71,6 +74,9 @@ class Client:
         self.socket.sendall(pack('B', CHOSEN_ID) + pack('B', decision))
         print("Mandando ID...")
         reply = self.socket.recv(1)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         if bytes_2_int(reply) == ID_NOT_FOUND:
             if not first:
                 print("No se encontró el ID especificado en la base de datos.")
@@ -85,6 +91,11 @@ class Client:
                 print("El ID del usuario corresponde a un entrenador que ya está activo.")
             return False
 
+    def verify_pokemon(self, id_p):
+        if id_p > 9:
+            self.close_connection()
+            print("Ocurrió un error de transporte con el socket.")
+
     def input_password(self):
         first = True
         password = ""
@@ -95,6 +106,9 @@ class Client:
     def password_confirmed(self, password, first):
         self.socket.sendall(pack('B', PASSWORD) + password.encode())
         reply = self.socket.recv(1)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         print("Recibí respuesta")
         if bytes_2_int(reply) == PASS_NO_MATCH:
             if not first:
@@ -103,6 +117,9 @@ class Client:
         elif bytes_2_int(reply) == YES:
             if not first:
                 print("Estás dentro.")
+
+                self.receive_captured_list()
+
                 self.request_capturing()
             return True
 
@@ -113,6 +130,9 @@ class Client:
 
     def receive_pokemon_suggestion(self):
         reply = self.socket.recv(1024)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         if reply[0] == CAPTURING_VERIFICATION:
             answer = ""
             while answer != "y" and answer != "n":
@@ -131,6 +151,9 @@ class Client:
 
     def receive_capturing_validation(self):
         reply = self.socket.recv(1)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         if bytes_2_int(reply) == ALREADY_HAVE_ALL:
             print("Ya tenías todos los pokémones. Has completado el juego.")
             self.receive_session_termination()
@@ -169,7 +192,13 @@ class Client:
 
     def receive_image(self):
         code = self.socket.recv(1)
+        print("code", code)
+        if code[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         idpokemon = bytes_2_int(self.socket.recv(1))
+        self.verify_pokemon(idpokemon)
+        print("id", idpokemon)
         #tam_image = self.socket.recv(4)
         f = open(str(idpokemon)+".png",'wb')
         l = 1
@@ -180,12 +209,23 @@ class Client:
             #l = self.socket.recv(1024)
         print("Se guardó una imagen del pokémon capturado en el archivo " + str(idpokemon) + ".png.")
         f.close()
+
         print("Sesión terminada.")
         reply = self.socket.recv(1)
         self.close_connection()
+
+    def receive_captured_list(self):
+        reply = self.socket.recv(4096)
+        print(reply)
+        #if reply[0] == POKEMON_LIST:
+        tp.banner("Pokédex")
+        print(reply[1:].decode())
  
     def verify_capture(self):
         reply = self.socket.recv(3)
+        if reply[0] == TIMEOUT:
+            print("Ocurrió un timeout en la conexión")
+            self.close_connection()
         if reply[0] == REMAINING_ATTEMPTS:
             print("No lo capturaste. Te quedan " + str(reply[-1])  + " intentos.")
             return False
@@ -198,9 +238,9 @@ class Client:
 
     def receive_session_termination(self):
         reply = self.socket.recv(1)
-        if bytes_2_int(reply) == TERMINATED_SESSION:
+        if bytes_2_int(reply) == TERMINATED_SESSION or bytes_2_int(reply) == TIMEOUT:
             print(reply)
-            print("Sesión terminada.")
+            print("Sesión terminada: " + ("timeout" if bytes_2_int(reply) == TIMEOUT else ""))
             self.close_connection()
         else:
             raise Exception("Esperaba TERMINATION")
