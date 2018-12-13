@@ -176,9 +176,9 @@ def capture_pokemon(conn, user_id):
         else:
             send_not_have(conn)
             captured = False
-            max_attempts = 15#randint(2, 10)
+            max_attempts = randint(4, 20)
             while not captured and max_attempts > 1:
-                captured = True #randint(0, 2) == 1
+                captured = randint(0, 10) == 1
                 print("lo captura" , captured)
                 max_attempts -= 1
                 if not captured:

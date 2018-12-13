@@ -30,7 +30,6 @@ prepare-env:
 	@pip3 install -r requirements.txt
 
 create_manual:
-	@echo $(UNAME_S)
 	@if [ $(UNAME_S) = "Darwin" ]; then \
 		cp manpages/pokemon_server.1 /usr/local/share/man/man1/pokemon_server.1; \
 		gzip /usr/local/share/man/man1/pokemon_server.1; \
@@ -47,6 +46,8 @@ create_manual:
 
 create_db:
 	@mkdir DB
+	@python3 init_db.py
+	@echo "La base de datos fue inicializada"
 
 build: create_manual create_db
 	@echo OK
