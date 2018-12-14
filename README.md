@@ -58,17 +58,26 @@ make run_pokemon_server
 
 # Manueles de Unix
 
-Una vez ejecutado el comando `make build` se habrá creado dos manuales, uno del 
-servidor y otro del cliente.
-
-Para acceder a ellos basta con ejecutar los siguientes comandos respectivamente.
-
+Si se ejecuta en entorno Mac se podrá ver los manueles de la siguiente manera 
+después de haber ejecutado `make build`.
 ```
 man pokemon_client
 ```
 
 ```
-man pokemon_server
+man pokemon_servergi
+```
+
+Encontramos un inconveniento y en diferentes versiones de Linux se ponen en 
+los manuales de Unix en diferentes ubicaciones, para no lidiar con esto, 
+no se instalarán los manuales, pero se podrán visualizar con los siguientes 
+comandos.
+```
+make manual_pokemon_server
+```
+
+```
+make manual_pokemon_client
 ```
 
 # Captura del tráfico de Wireshark

@@ -36,13 +36,6 @@ create_manual:
 		cp manpages/pokemon_client.1 /usr/local/share/man/man1/pokemon_client.1; \
 		gzip /usr/local/share/man/man1/pokemon_client.1; \
 		echo OK; \
-	else \
-		cp manpages/pokemon_server.1 /usr/local/share/man/man1; \
-		gzip /usr/local/share/man/man1/pokemon_server.1 \
-		cp manpages/pokemon_client.1 /usr/local/share/man/man1; \
-		gzip /usr/local/share/man/man1/pokemon_client.1 \
-		mandb; \
-		echo OK; \
 	fi
 
 create_db:
@@ -51,6 +44,12 @@ create_db:
 
 build: create_manual create_db
 	@echo OK
+
+manual_pokemon_server:
+	@man ./manpages/pokemon_server.1
+
+manual_pokemon_client:
+	@man ./manpages/pokemon_client.1
 
 clean:
 	@rm -rf src/DB
