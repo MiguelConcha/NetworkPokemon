@@ -39,8 +39,11 @@ create_manual:
 	fi
 
 create_db:
-	@cd src && mkdir DB && python3 init_db.py
-	@echo "La base de datos fue inicializada"
+	@if [ ! -d "src/DB" ]; then \
+		cd src && mkdir DB && python3 init_db.py; \
+		echo "La base de datos fue inicializada"; \
+	fi
+	@echo OK;
 
 build: create_manual create_db
 	@echo OK
@@ -52,9 +55,10 @@ manual_pokemon_client:
 	@man ./manpages/pokemon_client.1
 
 clean:
-	@rm -rf src/DB
-	@rm -rf src/__pycache__
-	@rm src/*.png
+	@rm -rf src/DB 2> /dev/null || true
+	@rm -rf src/__pycache__ 2> /dev/null || true
+	@rm src/*.png 2> /dev/null || true
+
 run_pokemon_client:
 	@cd src && python3 client.py
 
