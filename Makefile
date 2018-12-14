@@ -37,10 +37,11 @@ create_manual:
 		gzip /usr/local/share/man/man1/pokemon_client.1; \
 		echo OK; \
 	else \
-		cp manpages/pokemon_server.1 /usr/local/share/man/man1/pokemon_server.1; \
+		cp manpages/pokemon_server.1 /usr/local/share/man/man1; \
 		gzip /usr/local/share/man/man1/pokemon_server.1 \
-		cp manpages/pokemon_client.1 /usr/local/share/man/man1/pokemon_client.1; \
+		cp manpages/pokemon_client.1 /usr/local/share/man/man1; \
 		gzip /usr/local/share/man/man1/pokemon_client.1 \
+		mandb; \
 		echo OK; \
 	fi
 
