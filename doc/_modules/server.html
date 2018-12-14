@@ -1,0 +1,612 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>server &#8212; documentación de Proyecto de Redes - 1.0</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Código fuente para server</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">message_codes</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">_thread</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">struct</span> <span class="k">import</span> <span class="n">pack</span>
+<span class="kn">from</span> <span class="nn">random</span> <span class="k">import</span> <span class="n">randint</span>
+<span class="kn">from</span> <span class="nn">socket</span> <span class="k">import</span> <span class="n">timeout</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="n">DB_pokemon</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pikachu&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/1.png&quot;</span><span class="p">),</span>
+    <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;charizard&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/2.png&quot;</span><span class="p">),</span>
+    <span class="mi">3</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;mewtwo&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/3.png&quot;</span><span class="p">),</span>
+    <span class="mi">4</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;bulbasaur&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/4.png&quot;</span><span class="p">),</span>
+    <span class="mi">5</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;squirtle&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/5.png&quot;</span><span class="p">),</span>
+    <span class="mi">6</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;blastoise&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/6.png&quot;</span><span class="p">),</span>
+    <span class="mi">7</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;caterpie&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/7.png&quot;</span><span class="p">),</span>
+    <span class="mi">8</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;pidgeot&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/8.png&quot;</span><span class="p">),</span>
+    <span class="mi">9</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;oddish&quot;</span><span class="p">,</span> <span class="s2">&quot;assets/9.png&quot;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="load_obj"><a class="viewcode-back" href="../index.html#server.load_obj">[documentos]</a><span class="k">def</span> <span class="nf">load_obj</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Carga la base de datos que es un diccionario.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name: Nombre de la base de datos</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        El objeto que se serializó.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;DB/&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_obj"><a class="viewcode-back" href="../index.html#server.save_obj">[documentos]</a><span class="k">def</span> <span class="nf">save_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Serializa un diccionario que guarda el estdo actual de la base de datos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: Diccionario a serializar.</span>
+<span class="sd">        name: El nombre de la base de datos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;DB/&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Server"><a class="viewcode-back" href="../index.html#server.Server">[documentos]</a><span class="k">class</span> <span class="nc">Server</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Clase que manejara la conexión del servidor, así como actualizar</span>
+<span class="sd">    los estados del socket usado.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host: La dirección con la que se hará la conexión.</span>
+<span class="sd">        port: El puerto en el que se llevará la comunicación.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Server.bind_socket"><a class="viewcode-back" href="../index.html#server.Server.bind_socket">[documentos]</a>    <span class="k">def</span> <span class="nf">bind_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hace un enlace usando el soccket.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+            <span class="c1"># self.socket.settimeout(600)</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error en el binding.&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Binding completado.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Server.listen_socket"><a class="viewcode-back" href="../index.html#server.Server.listen_socket">[documentos]</a>    <span class="k">def</span> <span class="nf">listen_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Para activar el socket.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">listen</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;El socket está listo.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Server.serve"><a class="viewcode-back" href="../index.html#server.Server.serve">[documentos]</a>    <span class="k">def</span> <span class="nf">serve</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Empezar a efectiar la comunicación.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">conn</span><span class="p">,</span> <span class="n">addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">settimeout</span><span class="p">(</span><span class="mi">60</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Conexión con: &quot;</span> <span class="o">+</span> <span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">start_new_thread</span><span class="p">(</span><span class="n">clientthread</span><span class="p">,</span> <span class="p">(</span><span class="n">conn</span><span class="p">,))</span></div></div>
+
+
+<div class="viewcode-block" id="transmit"><a class="viewcode-back" href="../index.html#server.transmit">[documentos]</a><span class="k">def</span> <span class="nf">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enviar un mensaje.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      conn: Un objeto socket que es usado para enviar/recibir información</span>
+<span class="sd">      message: Mensaje o código de envío.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;envio &quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_trainers"><a class="viewcode-back" href="../index.html#server.get_trainers">[documentos]</a><span class="k">def</span> <span class="nf">get_trainers</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">    Obtener entrenadores en una cadena formateada</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Un (str) con los entrenadores de la base de datos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">k</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; : &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;Trainer&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">DB_users</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span></div>
+
+
+<div class="viewcode-block" id="send_welcome_message"><a class="viewcode-back" href="../index.html#server.send_welcome_message">[documentos]</a><span class="k">def</span> <span class="nf">send_welcome_message</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía mensaje de bienvenida por medio de un socket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">WELCOME</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_pregunta_juego"><a class="viewcode-back" href="../index.html#server.send_pregunta_juego">[documentos]</a><span class="k">def</span> <span class="nf">send_pregunta_juego</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía un pregunta por medio de un socket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">PLAYING_QUESTION</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_bool_answer"><a class="viewcode-back" href="../index.html#server.get_bool_answer">[documentos]</a><span class="k">def</span> <span class="nf">get_bool_answer</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene la la respuesta que se recibió.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (bool) diciendo el esrado que recibió.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="terminate_session"><a class="viewcode-back" href="../index.html#server.terminate_session">[documentos]</a><span class="k">def</span> <span class="nf">terminate_session</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Terminar sersión con el cliente.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">TERMINATED_SESSION</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_trainers"><a class="viewcode-back" href="../index.html#server.send_trainers">[documentos]</a><span class="k">def</span> <span class="nf">send_trainers</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enviá entrenadores disponibles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">TRAINER_LIST</span><span class="p">)</span> <span class="o">+</span> <span class="n">get_trainers</span><span class="p">()</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="get_user_id"><a class="viewcode-back" href="../index.html#server.get_user_id">[documentos]</a><span class="k">def</span> <span class="nf">get_user_id</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene el identificador del entrenador pokemon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Entrenador escogido.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_id</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CHOSEN_ID</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">user_id</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Esperaba choosen id&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_user_pwd"><a class="viewcode-back" href="../index.html#server.get_user_pwd">[documentos]</a><span class="k">def</span> <span class="nf">get_user_pwd</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene la contraseña del usuario</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        La contraseña de un entrenador.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">user_pwd</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">user_pwd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">PASSWORD</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">user_pwd</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Esperaba PASSWORD&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="send_id_no_encontrado"><a class="viewcode-back" href="../index.html#server.send_id_no_encontrado">[documentos]</a><span class="k">def</span> <span class="nf">send_id_no_encontrado</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que no que identificador no fue encontrado.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">ID_NOT_FOUND</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_active_user"><a class="viewcode-back" href="../index.html#server.send_active_user">[documentos]</a><span class="k">def</span> <span class="nf">send_active_user</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que el usuario está activo.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">ACTIVE_USER</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_confirmation"><a class="viewcode-back" href="../index.html#server.send_confirmation">[documentos]</a><span class="k">def</span> <span class="nf">send_confirmation</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket una confirmación del lado del servidor.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">YES</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_pass_no_match"><a class="viewcode-back" href="../index.html#server.send_pass_no_match">[documentos]</a><span class="k">def</span> <span class="nf">send_pass_no_match</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que la contraseña no fue válida.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">PASS_NO_MATCH</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_solicitud"><a class="viewcode-back" href="../index.html#server.get_solicitud">[documentos]</a><span class="k">def</span> <span class="nf">get_solicitud</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Obtiene por el socket la solicitud.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (int) El número de la solicitud.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">solicitud</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">solicitud</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="choose_random_pokemon"><a class="viewcode-back" href="../index.html#server.choose_random_pokemon">[documentos]</a><span class="k">def</span> <span class="nf">choose_random_pokemon</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reegresa un número aleatorio entre [1, len(DB_pokemon)].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        (int) Numero positivo entre [1, len(DB_pokemon)].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">DB_pokemon</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_pokemon_info"><a class="viewcode-back" href="../index.html#server.send_pokemon_info">[documentos]</a><span class="k">def</span> <span class="nf">send_pokemon_info</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket la fila de los pokemones.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">        pokemon_row: la fila de los pokemones.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">CAPTURING_VERIFICATION</span><span class="p">)</span> <span class="o">+</span> \
+        <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">)</span> <span class="o">+</span> <span class="n">DB_pokemon</span><span class="p">[</span><span class="n">pokemon_row</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="send_all_catched"><a class="viewcode-back" href="../index.html#server.send_all_catched">[documentos]</a><span class="k">def</span> <span class="nf">send_all_catched</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que todos los pokemones fueron capturados.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">ALREADY_HAVE_ALL</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_already_have"><a class="viewcode-back" href="../index.html#server.send_already_have">[documentos]</a><span class="k">def</span> <span class="nf">send_already_have</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que ya se tiene al pokemon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">ALREADY_HAVE_POKEMON</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_not_have"><a class="viewcode-back" href="../index.html#server.send_not_have">[documentos]</a><span class="k">def</span> <span class="nf">send_not_have</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que no está el pokemon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">DO_NOT_HAVE_POKEMON</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="terminate"><a class="viewcode-back" href="../index.html#server.terminate">[documentos]</a><span class="k">def</span> <span class="nf">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Termina la conexioón con el socket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">terminate_session</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+    <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="send_attempts"><a class="viewcode-back" href="../index.html#server.send_attempts">[documentos]</a><span class="k">def</span> <span class="nf">send_attempts</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">pokemon_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía el número de intentos con el id del pokemon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">        pokemon_id: Identificador del pokenon.</span>
+<span class="sd">        n: Número de intentos.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">REMAINING_ATTEMPTS</span><span class="p">)</span> <span class="o">+</span> \
+        <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">pokemon_id</span><span class="p">)</span> <span class="o">+</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">package</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="send_successful_capture"><a class="viewcode-back" href="../index.html#server.send_successful_capture">[documentos]</a><span class="k">def</span> <span class="nf">send_successful_capture</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que la captura fue exitosa.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">CAPTURED_POKEMON</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_ran_out_of_attempts"><a class="viewcode-back" href="../index.html#server.send_ran_out_of_attempts">[documentos]</a><span class="k">def</span> <span class="nf">send_ran_out_of_attempts</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que se ha excedido el número de intentos.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">      conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">NO_MORE_ATTEMPTS</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="send_image"><a class="viewcode-back" href="../index.html#server.send_image">[documentos]</a><span class="k">def</span> <span class="nf">send_image</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía por el socket que la imagen del pomekemon.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">        pokemon_row: La fila del pokemon. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">DB_pokemon</span><span class="p">[</span><span class="n">pokemon_row</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+    <span class="n">tam_image</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">DB_pokemon</span><span class="p">[</span><span class="n">pokemon_row</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">st_size</span>
+    <span class="n">pack_tam</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s2">&quot;&lt;L&quot;</span><span class="p">,</span> <span class="n">tam_image</span><span class="p">)</span>
+    <span class="c1">#tam_entries = len(tam_image)</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+    <span class="c1"># print(l)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">l</span>  <span class="c1"># pack(&#39;B&#39;, l)</span>
+    <span class="k">while</span> <span class="p">(</span><span class="n">l</span><span class="p">):</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="n">image</span> <span class="o">+=</span> <span class="n">l</span>
+    <span class="n">package</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">CAPTURED_POKEMON</span><span class="p">)</span> <span class="o">+</span> \
+        <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">)</span> <span class="o">+</span> <span class="n">pack_tam</span> <span class="o">+</span> <span class="n">image</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">package</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">package</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="send_captured_pokemons"><a class="viewcode-back" href="../index.html#server.send_captured_pokemons">[documentos]</a><span class="k">def</span> <span class="nf">send_captured_pokemons</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">id_user</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Envía los pokemones capturados por el socker</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">        id_user: Identificador del usuario.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">POKEMON_LIST</span><span class="p">)</span> <span class="o">+</span>
+             <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DB_users</span><span class="p">[</span><span class="n">id_user</span><span class="p">][</span><span class="s1">&#39;Catched&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="capture_pokemon"><a class="viewcode-back" href="../index.html#server.capture_pokemon">[documentos]</a><span class="k">def</span> <span class="nf">capture_pokemon</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">user_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Captura a un pokemon con el identificador del usuario y dice si sí</span>
+<span class="sd">    lo capturar.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">        user_id: Identificador del usuario.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pokemon_row</span> <span class="o">=</span> <span class="n">choose_random_pokemon</span><span class="p">()</span>
+    <span class="n">send_pokemon_info</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">)</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="n">get_bool_answer</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="n">YES</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Catched&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">DB_pokemon</span><span class="p">):</span>
+            <span class="n">send_all_catched</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">pokemon_row</span> <span class="ow">in</span> <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Catched&quot;</span><span class="p">]:</span>
+            <span class="n">send_already_have</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">capture_pokemon</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">send_not_have</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">captured</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">max_attempts</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">captured</span> <span class="ow">and</span> <span class="n">max_attempts</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">captured</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;lo captura&quot;</span><span class="p">,</span> <span class="n">captured</span><span class="p">)</span>
+                <span class="n">max_attempts</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">captured</span><span class="p">:</span>
+                    <span class="n">send_attempts</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">)</span>
+                    <span class="n">try_again</span> <span class="o">=</span> <span class="n">get_bool_answer</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">try_again</span> <span class="o">==</span> <span class="n">NO</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">send_successful_capture</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">captured</span> <span class="ow">and</span> <span class="n">try_again</span> <span class="o">==</span> <span class="n">YES</span><span class="p">:</span>
+                <span class="n">send_ran_out_of_attempts</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+                <span class="n">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="n">captured</span><span class="p">:</span>
+                <span class="n">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;capturado y a terminar&quot;</span><span class="p">)</span>
+                <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Catched&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DB_pokemon</span><span class="p">[</span><span class="n">pokemon_row</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">save_obj</span><span class="p">(</span><span class="n">DB_users</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+                <span class="c1"># ENVIAR IMAGEN Y REGISTRAR POKEMON</span>
+                <span class="n">send_image</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pokemon_row</span><span class="p">)</span>
+                <span class="c1">#conf = conn.recv(1)</span>
+                <span class="c1"># print(conf)</span>
+                <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">TERMINATED_SESSION</span><span class="p">))</span>
+                <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">pass</span>
+
+    <span class="k">elif</span> <span class="n">answer</span> <span class="o">==</span> <span class="n">NO</span><span class="p">:</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">TERMINATED_SESSION</span><span class="p">))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="c1"># terminate(conn)</span>
+
+
+<div class="viewcode-block" id="clientthread"><a class="viewcode-back" href="../index.html#server.clientthread">[documentos]</a><span class="k">def</span> <span class="nf">clientthread</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Función que va a ser llamada para manejar la conexión de cada cliente.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        conn: Un socket que es usado para enviar/recibir información.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">send_welcome_message</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">send_pregunta_juego</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">to_play</span> <span class="o">=</span> <span class="n">get_bool_answer</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">user_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">to_play</span> <span class="o">==</span> <span class="n">YES</span><span class="p">:</span>
+            <span class="n">send_trainers</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="c1"># GET USER FROM CLIENT</span>
+            <span class="n">user_id</span> <span class="o">=</span> <span class="n">get_user_id</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">while</span> <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DB_users</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">or</span> <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Active&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">user_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">DB_users</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="n">send_id_no_encontrado</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Active&quot;</span><span class="p">]:</span>
+                    <span class="n">send_active_user</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+                <span class="n">user_id</span> <span class="o">=</span> <span class="n">get_user_id</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Active&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">save_obj</span><span class="p">(</span><span class="n">DB_users</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+            <span class="n">send_confirmation</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+            <span class="c1"># GET PASSWD FROM CLIENT</span>
+            <span class="n">user_pwd</span> <span class="o">=</span> <span class="n">get_user_pwd</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Password&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">user_pwd</span><span class="p">:</span>
+                <span class="n">send_pass_no_match</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+                <span class="n">user_pwd</span> <span class="o">=</span> <span class="n">get_user_pwd</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">send_confirmation</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+            <span class="n">send_captured_pokemons</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span>
+            <span class="c1"># INICIA CAPTURA DE POKEMON</span>
+
+            <span class="n">solicitud</span> <span class="o">=</span> <span class="n">get_solicitud</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">solicitud</span> <span class="o">==</span> <span class="n">REQUEST_CAPTURING</span><span class="p">:</span>
+                <span class="n">capture_pokemon</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">user_id</span><span class="p">)</span>
+
+            <span class="c1"># YA SE VA A ACABAR LA CONEXION</span>
+            <span class="n">DB_users</span><span class="p">[</span><span class="n">user_id</span><span class="p">][</span><span class="s2">&quot;Active&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;local false&quot;</span><span class="p">,</span> <span class="n">DB_users</span><span class="p">)</span>
+            <span class="n">save_obj</span><span class="p">(</span><span class="n">DB_users</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;save false&quot;</span><span class="p">,</span> <span class="n">load_obj</span><span class="p">(</span><span class="s2">&quot;db&quot;</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">to_play</span> <span class="o">==</span> <span class="n">NO</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;no quiere jugar&quot;</span><span class="p">)</span>
+            <span class="c1"># terminate(conn)</span>
+            <span class="n">pac</span> <span class="o">=</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">))</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;se cerró la conexión&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">timeout</span><span class="p">:</span>
+        <span class="n">transmit</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">TIMEOUT</span><span class="p">))</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;timeout&quot;</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">DB_users</span> <span class="o">=</span> <span class="n">load_obj</span><span class="p">(</span><span class="s2">&quot;db&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">DB_users</span><span class="p">)</span>
+
+    <span class="n">server</span> <span class="o">=</span> <span class="n">Server</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">bind_socket</span><span class="p">()</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">listen_socket</span><span class="p">()</span>
+    <span class="n">server</span><span class="o">.</span><span class="n">serve</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proyecto de Redes</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Miguel Concha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

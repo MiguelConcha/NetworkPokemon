@@ -1,0 +1,638 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Welcome to Proyecto de Redes’s documentation! &#8212; documentación de Proyecto de Redes - 1.0</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/translations.js"></script>
+    <link rel="index" title="Índice" href="genindex.html" />
+    <link rel="search" title="Búsqueda" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-proyecto-de-redes-s-documentation">
+<h1>Welcome to Proyecto de Redes’s documentation!<a class="headerlink" href="#welcome-to-proyecto-de-redes-s-documentation" title="Enlazar permanentemente con este título">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="module-init_db">
+<span id="init-db"></span><h1>init_db<a class="headerlink" href="#module-init_db" title="Enlazar permanentemente con este título">¶</a></h1>
+<dl class="function">
+<dt id="init_db.save_obj">
+<code class="descclassname">init_db.</code><code class="descname">save_obj</code><span class="sig-paren">(</span><em>obj</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/init_db.html#save_obj"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#init_db.save_obj" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><blockquote>
+<div>Serializa un objeto para guardarlo en memoria.</div></blockquote>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>obj: El objeto a guardar.
+name: El nombre de como se va a guardar el objeto que se serializó.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-message_codes">
+<span id="message-codes"></span><h1>message_codes<a class="headerlink" href="#module-message_codes" title="Enlazar permanentemente con este título">¶</a></h1>
+<dl class="function">
+<dt id="message_codes.bytes_2_int">
+<code class="descclassname">message_codes.</code><code class="descname">bytes_2_int</code><span class="sig-paren">(</span><em>byte_repr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/message_codes.html#bytes_2_int"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#message_codes.bytes_2_int" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Convierte un flujo de bytes a un entero</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>byte_repr: Arreglo de bytes</dd>
+<dt>Returns:</dt>
+<dd>(int) Regresa la conversión de bytes a entero.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-client">
+<span id="client"></span><h1>client<a class="headerlink" href="#module-client" title="Enlazar permanentemente con este título">¶</a></h1>
+<dl class="class">
+<dt id="client.Client">
+<em class="property">class </em><code class="descclassname">client.</code><code class="descname">Client</code><span class="sig-paren">(</span><em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Clase hace el manejo del cliente con el servidor por medio de un socket.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>host: El host con el que se va comunicar el socket.
+port: El puerto con el que se va comunicar el socket.</dd>
+</dl>
+<dl class="method">
+<dt id="client.Client.close_connection">
+<code class="descname">close_connection</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.close_connection"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.close_connection" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Cierra la conexión con el socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.commence_protocol">
+<code class="descname">commence_protocol</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.commence_protocol"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.commence_protocol" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Iniciailiza la conexión con el prótocolo para iniciar la captura
+de pokemones.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.confirmed_id">
+<code class="descname">confirmed_id</code><span class="sig-paren">(</span><em>decision</em>, <em>first</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.confirmed_id"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.confirmed_id" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Confirma identificador.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>decision: Identificador de la decisión.
+first: Si el usuario ya corresponde a un entrenador.</dd>
+<dt>Returns:</dt>
+<dd>(bool) Su el identificador ya fue confirmado.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.connect">
+<code class="descname">connect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.connect"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.connect" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>El socket se conecta al host y al puerto.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.input_password">
+<code class="descname">input_password</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.input_password"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.input_password" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Le pide al usuario su contraseña.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.password_confirmed">
+<code class="descname">password_confirmed</code><span class="sig-paren">(</span><em>password</em>, <em>first</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.password_confirmed"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.password_confirmed" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Verifica la contraseña para así permitir el acceso al juego.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>password: Contraseña del usuario
+first: Si es la primera vez que estaba dentro</dd>
+<dt>Returns:</dt>
+<dd>(bool) Si pudo acceder a jugar.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_captured_list">
+<code class="descname">receive_captured_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_captured_list"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_captured_list" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Muestra los pokemones capturados del socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_capturing_validation">
+<code class="descname">receive_capturing_validation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_capturing_validation"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_capturing_validation" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Muestra las posibles opciones sobre la captura de los pokemones
+tales conmo que lo has capturado o no.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_image">
+<code class="descname">receive_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_image"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_image" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Recibe la imagen del pokemon que fue enviada por el servidor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_list">
+<code class="descname">receive_list</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_list"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_list" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Recibe la lista personas con las que se jugará.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_pokemon_suggestion">
+<code class="descname">receive_pokemon_suggestion</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_pokemon_suggestion"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_pokemon_suggestion" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Le pregunta al usuario si quiere capturar a ese pokemon.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_session_termination">
+<code class="descname">receive_session_termination</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_session_termination"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_session_termination" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Recibe por el socket el estado de que la sesión ya se ha terminado</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.receive_welcome">
+<code class="descname">receive_welcome</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.receive_welcome"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.receive_welcome" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Mostrar mensaje de bienvenida que es enviado por el servidor.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.request_capturing">
+<code class="descname">request_capturing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.request_capturing"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.request_capturing" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Pide que se pueda capturar un pokemon.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.send_capturing_answer">
+<code class="descname">send_capturing_answer</code><span class="sig-paren">(</span><em>answer</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.send_capturing_answer"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.send_capturing_answer" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía al servidor si sí fue capturado o no el pokemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>answer: Respuesta de si se ha capturado.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.send_reception_image">
+<code class="descname">send_reception_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.send_reception_image"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.send_reception_image" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Muestra un mensaje de que ya envió la imagen.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.verify_capture">
+<code class="descname">verify_capture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.verify_capture"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.verify_capture" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Verifica si se capturó un pokmeon.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>(bool) Si se capturó un pokmeon.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.verify_img_code">
+<code class="descname">verify_img_code</code><span class="sig-paren">(</span><em>code</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.verify_img_code"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.verify_img_code" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Verifica si el código el código es de una imagen.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>code: Código de la imágen.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="client.Client.verify_pokemon">
+<code class="descname">verify_pokemon</code><span class="sig-paren">(</span><em>id_p</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/client.html#Client.verify_pokemon"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#client.Client.verify_pokemon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Verifica si el identificaor del pokemon es válido.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>id_p: Identificador del pokemon.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-server">
+<span id="server"></span><h1>server<a class="headerlink" href="#module-server" title="Enlazar permanentemente con este título">¶</a></h1>
+<dl class="class">
+<dt id="server.Server">
+<em class="property">class </em><code class="descclassname">server.</code><code class="descname">Server</code><span class="sig-paren">(</span><em>host</em>, <em>port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#Server"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.Server" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Clase que manejara la conexión del servidor, así como actualizar
+los estados del socket usado.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>host: La dirección con la que se hará la conexión.
+port: El puerto en el que se llevará la comunicación.</dd>
+</dl>
+<dl class="method">
+<dt id="server.Server.bind_socket">
+<code class="descname">bind_socket</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#Server.bind_socket"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.Server.bind_socket" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Hace un enlace usando el soccket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="server.Server.listen_socket">
+<code class="descname">listen_socket</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#Server.listen_socket"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.Server.listen_socket" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Para activar el socket.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="server.Server.serve">
+<code class="descname">serve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#Server.serve"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.Server.serve" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Empezar a efectiar la comunicación.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="server.capture_pokemon">
+<code class="descclassname">server.</code><code class="descname">capture_pokemon</code><span class="sig-paren">(</span><em>conn</em>, <em>user_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#capture_pokemon"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.capture_pokemon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Captura a un pokemon con el identificador del usuario y dice si sí
+lo capturar.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.
+user_id: Identificador del usuario.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.choose_random_pokemon">
+<code class="descclassname">server.</code><code class="descname">choose_random_pokemon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#choose_random_pokemon"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.choose_random_pokemon" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Reegresa un número aleatorio entre [1, len(DB_pokemon)].</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>(int) Numero positivo entre [1, len(DB_pokemon)].</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.clientthread">
+<code class="descclassname">server.</code><code class="descname">clientthread</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#clientthread"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.clientthread" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Función que va a ser llamada para manejar la conexión de cada cliente.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.get_bool_answer">
+<code class="descclassname">server.</code><code class="descname">get_bool_answer</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#get_bool_answer"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.get_bool_answer" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene la la respuesta que se recibió.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+<dt>Returns:</dt>
+<dd>(bool) diciendo el esrado que recibió.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.get_solicitud">
+<code class="descclassname">server.</code><code class="descname">get_solicitud</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#get_solicitud"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.get_solicitud" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene por el socket la solicitud.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+<dt>Returns:</dt>
+<dd>(int) El número de la solicitud.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.get_trainers">
+<code class="descclassname">server.</code><code class="descname">get_trainers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#get_trainers"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.get_trainers" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtener entrenadores en una cadena formateada</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>Un (str) con los entrenadores de la base de datos.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.get_user_id">
+<code class="descclassname">server.</code><code class="descname">get_user_id</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#get_user_id"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.get_user_id" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene el identificador del entrenador pokemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+<dt>Returns:</dt>
+<dd>Entrenador escogido.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.get_user_pwd">
+<code class="descclassname">server.</code><code class="descname">get_user_pwd</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#get_user_pwd"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.get_user_pwd" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Obtiene la contraseña del usuario</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+<dt>Returns:</dt>
+<dd>La contraseña de un entrenador.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.load_obj">
+<code class="descclassname">server.</code><code class="descname">load_obj</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#load_obj"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.load_obj" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Carga la base de datos que es un diccionario.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>name: Nombre de la base de datos</dd>
+<dt>Returns:</dt>
+<dd>El objeto que se serializó.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.save_obj">
+<code class="descclassname">server.</code><code class="descname">save_obj</code><span class="sig-paren">(</span><em>obj</em>, <em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#save_obj"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.save_obj" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Serializa un diccionario que guarda el estdo actual de la base de datos.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>obj: Diccionario a serializar.
+name: El nombre de la base de datos.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_active_user">
+<code class="descclassname">server.</code><code class="descname">send_active_user</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_active_user"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_active_user" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que el usuario está activo.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_all_catched">
+<code class="descclassname">server.</code><code class="descname">send_all_catched</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_all_catched"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_all_catched" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que todos los pokemones fueron capturados.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_already_have">
+<code class="descclassname">server.</code><code class="descname">send_already_have</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_already_have"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_already_have" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que ya se tiene al pokemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_attempts">
+<code class="descclassname">server.</code><code class="descname">send_attempts</code><span class="sig-paren">(</span><em>conn</em>, <em>n</em>, <em>pokemon_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_attempts"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_attempts" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía el número de intentos con el id del pokemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.
+pokemon_id: Identificador del pokenon.
+n: Número de intentos.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_captured_pokemons">
+<code class="descclassname">server.</code><code class="descname">send_captured_pokemons</code><span class="sig-paren">(</span><em>conn</em>, <em>id_user</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_captured_pokemons"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_captured_pokemons" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía los pokemones capturados por el socker</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.
+id_user: Identificador del usuario.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_confirmation">
+<code class="descclassname">server.</code><code class="descname">send_confirmation</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_confirmation"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_confirmation" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket una confirmación del lado del servidor.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_id_no_encontrado">
+<code class="descclassname">server.</code><code class="descname">send_id_no_encontrado</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_id_no_encontrado"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_id_no_encontrado" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que no que identificador no fue encontrado.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_image">
+<code class="descclassname">server.</code><code class="descname">send_image</code><span class="sig-paren">(</span><em>conn</em>, <em>pokemon_row</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_image"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_image" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que la imagen del pomekemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.
+pokemon_row: La fila del pokemon.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_not_have">
+<code class="descclassname">server.</code><code class="descname">send_not_have</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_not_have"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_not_have" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que no está el pokemon.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_pass_no_match">
+<code class="descclassname">server.</code><code class="descname">send_pass_no_match</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_pass_no_match"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_pass_no_match" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que la contraseña no fue válida.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_pokemon_info">
+<code class="descclassname">server.</code><code class="descname">send_pokemon_info</code><span class="sig-paren">(</span><em>conn</em>, <em>pokemon_row</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_pokemon_info"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_pokemon_info" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket la fila de los pokemones.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.
+pokemon_row: la fila de los pokemones.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_pregunta_juego">
+<code class="descclassname">server.</code><code class="descname">send_pregunta_juego</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_pregunta_juego"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_pregunta_juego" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía un pregunta por medio de un socket.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_ran_out_of_attempts">
+<code class="descclassname">server.</code><code class="descname">send_ran_out_of_attempts</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_ran_out_of_attempts"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_ran_out_of_attempts" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que se ha excedido el número de intentos.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_successful_capture">
+<code class="descclassname">server.</code><code class="descname">send_successful_capture</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_successful_capture"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_successful_capture" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía por el socket que la captura fue exitosa.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_trainers">
+<code class="descclassname">server.</code><code class="descname">send_trainers</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_trainers"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_trainers" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Enviá entrenadores disponibles.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.send_welcome_message">
+<code class="descclassname">server.</code><code class="descname">send_welcome_message</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#send_welcome_message"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.send_welcome_message" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Envía mensaje de bienvenida por medio de un socket.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.terminate">
+<code class="descclassname">server.</code><code class="descname">terminate</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#terminate"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.terminate" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Termina la conexioón con el socket.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.terminate_session">
+<code class="descclassname">server.</code><code class="descname">terminate_session</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#terminate_session"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.terminate_session" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Terminar sersión con el cliente.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un socket que es usado para enviar/recibir información.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="server.transmit">
+<code class="descclassname">server.</code><code class="descname">transmit</code><span class="sig-paren">(</span><em>conn</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/server.html#transmit"><span class="viewcode-link">[fuente]</span></a><a class="headerlink" href="#server.transmit" title="Enlazar permanentemente con esta definición">¶</a></dt>
+<dd><p>Enviar un mensaje.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>conn: Un objeto socket que es usado para enviar/recibir información
+message: Mensaje o código de envío.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">Proyecto de Redes</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Miguel Concha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

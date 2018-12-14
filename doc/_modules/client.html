@@ -1,0 +1,479 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>client &#8212; documentación de Proyecto de Redes - 1.0</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/translations.js"></script>
+    <link rel="index" title="Índice" href="../genindex.html" />
+    <link rel="search" title="Búsqueda" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Código fuente para client</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">struct</span> <span class="k">import</span> <span class="n">pack</span>
+<span class="kn">from</span> <span class="nn">message_codes</span> <span class="k">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">tableprint</span> <span class="k">as</span> <span class="nn">tp</span>
+
+<span class="n">welcome_banner</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    _.----.        ____         ,&#39;  _\   ___    ___     ____</span>
+<span class="s2">_,-&#39;       `.     |    |  /`.   \,-&#39;    |   \  /   |   |    \  |`.</span>
+<span class="s2">\      __    \    &#39;-.  | /   `.  ___    |    \/    |   &#39;-.   \ |  |</span>
+<span class="s2"> \.    \ \   |  __  |  |/    ,&#39;,&#39;_  `.  |          | __  |    \|  |</span>
+<span class="s2">   \    \/   /,&#39; _`.|      ,&#39; / / / /   |          ,&#39; _`.|     |  |</span>
+<span class="s2">    \     ,-&#39;/  /   \    ,&#39;   | \/ / ,`.|         /  /   \  |     |</span>
+<span class="s2">     \    \ |   \_/  |   `-.  \    `&#39;  /|  |    ||   \_/  | |\    |</span>
+<span class="s2">      \    \ \      /       `-.`.___,-&#39; |  |\  /| \      /  | |   |</span>
+<span class="s2">       \    \ `.__,&#39;|  |`-._    `|      |__| \/ |  `.__,&#39;|  | |   |</span>
+<span class="s2">        \_.-&#39;       |__|    `-._ |              &#39;-.|     &#39;-.| |   |</span>
+<span class="s2">                                `&#39;                            &#39;-._|&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="Client"><a class="viewcode-back" href="../index.html#client.Client">[documentos]</a><span class="k">class</span> <span class="nc">Client</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clase hace el manejo del cliente con el servidor por medio de un socket.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host: El host con el que se va comunicar el socket.</span>
+<span class="sd">        port: El puerto con el que se va comunicar el socket.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">host</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_socket</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Crear un INET, STREAMing socket que será usado para la </span>
+<span class="sd">        comunicación con el servidor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_STREAM</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Socket creation failed&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Socket creation complete&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+<div class="viewcode-block" id="Client.connect"><a class="viewcode-back" href="../index.html#client.Client.connect">[documentos]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        El socket se conecta al host y al puerto.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">port</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Connected to &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.receive_welcome"><a class="viewcode-back" href="../index.html#client.Client.receive_welcome">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_welcome</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Mostrar mensaje de bienvenida que es enviado por el servidor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">WELCOME</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">welcome_banner</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.commence_protocol"><a class="viewcode-back" href="../index.html#client.Client.commence_protocol">[documentos]</a>    <span class="k">def</span> <span class="nf">commence_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Iniciailiza la conexión con el prótocolo para iniciar la captura</span>
+<span class="sd">        de pokemones.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span> <span class="o">==</span> <span class="n">PLAYING_QUESTION</span><span class="p">:</span>
+            <span class="n">answer_from_client</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">while</span> <span class="n">answer_from_client</span> <span class="o">!=</span> <span class="s2">&quot;y&quot;</span> <span class="ow">and</span> <span class="n">answer_from_client</span> <span class="o">!=</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+                <span class="n">answer_from_client</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span>
+                    <span class="s2">&quot;Quieres capturar un pokémon? (y/n): &quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">answer_from_client</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">NO</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">receive_session_termination</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">answer_from_client</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">YES</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">receive_list</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.receive_list"><a class="viewcode-back" href="../index.html#client.Client.receive_list">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recibe la lista personas con las que se jugará.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TRAINER_LIST</span><span class="p">:</span>
+            <span class="n">decision</span> <span class="o">=</span> <span class="mi">100</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">confirmed_id</span><span class="p">(</span><span class="n">decision</span><span class="p">,</span> <span class="n">first</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+                <span class="n">decision</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Elige el ID de usuario que te corresponde: &quot;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">first</span><span class="p">:</span>
+                    <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Client.confirmed_id"><a class="viewcode-back" href="../index.html#client.Client.confirmed_id">[documentos]</a>    <span class="k">def</span> <span class="nf">confirmed_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">decision</span><span class="p">,</span> <span class="n">first</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Confirma identificador.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            decision: Identificador de la decisión.</span>
+<span class="sd">            first: Si el usuario ya corresponde a un entrenador.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (bool) Su el identificador ya fue confirmado.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">CHOSEN_ID</span><span class="p">)</span> <span class="o">+</span> <span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">decision</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mandando ID...&quot;</span><span class="p">)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">ID_NOT_FOUND</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No se encontró el ID especificado en la base de datos.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">YES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;El ID fue encontrado en la base de datos.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">input_password</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">ACTIVE_USER</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;El ID del usuario corresponde a un entrenador que ya está activo.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Client.verify_pokemon"><a class="viewcode-back" href="../index.html#client.Client.verify_pokemon">[documentos]</a>    <span class="k">def</span> <span class="nf">verify_pokemon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">id_p</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifica si el identificaor del pokemon es válido.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          id_p: Identificador del pokemon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">id_p</span> <span class="o">&gt;</span> <span class="mi">9</span> <span class="ow">or</span> <span class="n">id_p</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un error de transporte con el socket.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.verify_img_code"><a class="viewcode-back" href="../index.html#client.Client.verify_img_code">[documentos]</a>    <span class="k">def</span> <span class="nf">verify_img_code</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifica si el código el código es de una imagen.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">          code: Código de la imágen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">code</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">119</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un error de transporte con el socket.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.input_password"><a class="viewcode-back" href="../index.html#client.Client.input_password">[documentos]</a>    <span class="k">def</span> <span class="nf">input_password</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Le pide al usuario su contraseña.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">password</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">password_confirmed</span><span class="p">(</span><span class="n">password</span><span class="p">,</span> <span class="n">first</span><span class="p">):</span>
+            <span class="n">password</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Contraseña: &quot;</span><span class="p">)</span>
+            <span class="n">first</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Client.password_confirmed"><a class="viewcode-back" href="../index.html#client.Client.password_confirmed">[documentos]</a>    <span class="k">def</span> <span class="nf">password_confirmed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">first</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifica la contraseña para así permitir el acceso al juego.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            password: Contraseña del usuario</span>
+<span class="sd">            first: Si es la primera vez que estaba dentro</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (bool) Si pudo acceder a jugar.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">PASSWORD</span><span class="p">)</span> <span class="o">+</span> <span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Recibí respuesta&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">PASS_NO_MATCH</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No coincide la contraseña.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">YES</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">first</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Estás dentro.&quot;</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">receive_captured_list</span><span class="p">()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">request_capturing</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Client.request_capturing"><a class="viewcode-back" href="../index.html#client.Client.request_capturing">[documentos]</a>    <span class="k">def</span> <span class="nf">request_capturing</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pide que se pueda capturar un pokemon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">REQUEST_CAPTURING</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ya mande solicitud&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">receive_pokemon_suggestion</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.receive_pokemon_suggestion"><a class="viewcode-back" href="../index.html#client.Client.receive_pokemon_suggestion">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_pokemon_suggestion</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Le pregunta al usuario si quiere capturar a ese pokemon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CAPTURING_VERIFICATION</span><span class="p">:</span>
+            <span class="n">answer</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">while</span> <span class="n">answer</span> <span class="o">!=</span> <span class="s2">&quot;y&quot;</span> <span class="ow">and</span> <span class="n">answer</span> <span class="o">!=</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+                <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Quieres capturar al pokemón &quot;</span> <span class="o">+</span>
+                               <span class="n">reply</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;? (y/n): &quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_capturing_answer</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Esperaba CAPTURING_VERIFICATION&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.send_capturing_answer"><a class="viewcode-back" href="../index.html#client.Client.send_capturing_answer">[documentos]</a>    <span class="k">def</span> <span class="nf">send_capturing_answer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">answer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Envía al servidor si sí fue capturado o no el pokemon.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            answer: Respuesta de si se ha capturado.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">YES</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">receive_capturing_validation</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">answer</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">NO</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">receive_session_termination</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.receive_capturing_validation"><a class="viewcode-back" href="../index.html#client.Client.receive_capturing_validation">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_capturing_validation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestra las posibles opciones sobre la captura de los pokemones</span>
+<span class="sd">        tales conmo que lo has capturado o no.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALREADY_HAVE_ALL</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ya tenías todos los pokémones. Has completado el juego.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">receive_session_termination</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">ALREADY_HAVE_POKEMON</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ya tienes el pokémon sugerido. Intentaré encontrarte otro.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">receive_pokemon_suggestion</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">DO_NOT_HAVE_POKEMON</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tu pokédex no reconoce a este pokémon. Intenta capturarlo!&quot;</span><span class="p">)</span>
+            <span class="n">captured</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">captured</span><span class="p">:</span>
+                <span class="n">captured</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">verify_capture</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">captured</span><span class="p">:</span>
+                    <span class="k">break</span>
+                <span class="n">again</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">while</span> <span class="n">again</span> <span class="o">!=</span> <span class="s2">&quot;y&quot;</span> <span class="ow">and</span> <span class="n">again</span> <span class="o">!=</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+                    <span class="n">again</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Quieres tratar de nuevo? (y/n): &quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">again</span> <span class="o">==</span> <span class="s2">&quot;n&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">NO</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">receive_session_termination</span><span class="p">()</span>
+                <span class="k">elif</span> <span class="n">again</span> <span class="o">==</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">YES</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">captured</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lo capturaste&quot;</span><span class="p">)</span>
+                <span class="c1"># imagen</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">receive_image</span><span class="p">()</span>
+                <span class="c1"># self.send_reception_image()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">receive_session_termination</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.send_reception_image"><a class="viewcode-back" href="../index.html#client.Client.send_reception_image">[documentos]</a>    <span class="k">def</span> <span class="nf">send_reception_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestra un mensaje de que ya envió la imagen.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;voy a enviar&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">sendall</span><span class="p">(</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">IMAGE_RECEIVED</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ya envié&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">IMAGE_RECEIVED</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Client.receive_image"><a class="viewcode-back" href="../index.html#client.Client.receive_image">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_image</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recibe la imagen del pokemon que fue enviada por el servidor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verify_img_code</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;code&quot;</span><span class="p">,</span> <span class="n">code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">code</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="n">idpokemon</span> <span class="o">=</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verify_pokemon</span><span class="p">(</span><span class="n">idpokemon</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">idpokemon</span><span class="p">)</span>
+        <span class="n">tam_image</span> <span class="o">=</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+        <span class="c1">#tam_image = self.socket.recv(4)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">idpokemon</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">while</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>
+            <span class="n">l</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+            <span class="c1"># while (l):</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+            <span class="c1">#l = self.socket.recv(1024)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Se guardó una imagen del pokémon capturado en el archivo &quot;</span> <span class="o">+</span>
+              <span class="nb">str</span><span class="p">(</span><span class="n">idpokemon</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;.png.&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sesión terminada.&quot;</span><span class="p">)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.receive_captured_list"><a class="viewcode-back" href="../index.html#client.Client.receive_captured_list">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_captured_list</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Muestra los pokemones capturados del socket.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">4096</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+        <span class="c1"># if reply[0] == POKEMON_LIST:</span>
+        <span class="n">tp</span><span class="o">.</span><span class="n">banner</span><span class="p">(</span><span class="s2">&quot;Pokédex&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Client.verify_capture"><a class="viewcode-back" href="../index.html#client.Client.verify_capture">[documentos]</a>    <span class="k">def</span> <span class="nf">verify_capture</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Verifica si se capturó un pokmeon.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            (bool) Si se capturó un pokmeon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ocurrió un timeout en la conexión&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">REMAINING_ATTEMPTS</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No lo capturaste. Te quedan &quot;</span> <span class="o">+</span>
+                  <span class="nb">str</span><span class="p">(</span><span class="n">reply</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; intentos.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">CAPTURED_POKEMON</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">reply</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">NO_MORE_ATTEMPTS</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Se acabaron los intentos.&quot;</span><span class="p">)</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Client.receive_session_termination"><a class="viewcode-back" href="../index.html#client.Client.receive_session_termination">[documentos]</a>    <span class="k">def</span> <span class="nf">receive_session_termination</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Recibe por el socket el estado de que la sesión ya se ha terminado</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">TERMINATED_SESSION</span> <span class="ow">or</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">TIMEOUT</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sesión terminada: &quot;</span> <span class="o">+</span>
+                  <span class="p">(</span><span class="s2">&quot;timeout&quot;</span> <span class="k">if</span> <span class="n">bytes_2_int</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span> <span class="o">==</span> <span class="n">TIMEOUT</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close_connection</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Esperaba TERMINATION&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Client.close_connection"><a class="viewcode-back" href="../index.html#client.Client.close_connection">[documentos]</a>    <span class="k">def</span> <span class="nf">close_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cierra la conexión con el socket.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Conexión cerrada.&quot;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">()</span></div></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--host&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Dirección del host&#39;</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">host_arg</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">host</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;localhost&#39;</span> <span class="k">if</span> <span class="n">host_arg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">host_arg</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="mi">9999</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">connect</span><span class="p">()</span>
+
+    <span class="n">client</span><span class="o">.</span><span class="n">receive_welcome</span><span class="p">()</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">commence_protocol</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">Proyecto de Redes</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navegación</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Código de módulo</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Búsqueda rápida</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Ir a" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Miguel Concha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.8.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

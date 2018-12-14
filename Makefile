@@ -1,4 +1,4 @@
-.PHONY: all prepare-env create_manual create_db build uninstall run_pokemon_client run_pokemon_server
+.PHONY: all prepare-env create_manual create_db build run_pokemon_client run_pokemon_server
 
 UNAME_S=$(shell uname -s)
 
@@ -45,18 +45,18 @@ create_manual:
 	fi
 
 create_db:
-	@mkdir DB
-	@python3 init_db.py
+	@cd src && mkdir DB && python3 init_db.py
 	@echo "La base de datos fue inicializada"
 
 build: create_manual create_db
 	@echo OK
 
 clean:
-	@rm -rf DB
-
+	@rm -rf src/DB
+	@rm -rf src/__pycache__
+	@rm src/*.png
 run_pokemon_client:
-	@python3 client.py
+	@cd src && python3 client.py
 
 run_pokemon_server:
-	@python3 server.py
+	@cd src && python3 server.py

@@ -1,0 +1,32 @@
+.. Proyecto de Redes documentation master file, created by
+   sphinx-quickstart on Thu Dec 13 21:27:30 2018.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+Welcome to Proyecto de Redes's documentation!
+=============================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+init_db
+=====================
+.. automodule:: init_db
+   :members:
+
+message_codes
+=====================
+.. automodule:: message_codes
+   :members:
+
+client
+=====================
+.. automodule:: client 
+   :members: 
+
+
+server
+=====================
+.. automodule:: server
+   :members:

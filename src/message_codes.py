@@ -22,5 +22,15 @@ ACTIVE_USER = 45
 TIMEOUT = 46
 IMAGE_RECEIVED = 33
 
+
 def bytes_2_int(byte_repr):
+    """
+    Convierte un flujo de bytes a un entero
+
+    Args:
+      byte_repr: Arreglo de bytes
+
+    Returns:
+        (int) Regresa la conversión de bytes a entero.
+    """
     return int.from_bytes(byte_repr, byteorder='little', signed=True)
