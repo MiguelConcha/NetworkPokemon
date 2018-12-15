@@ -1,4 +1,4 @@
-.PHONY: all prepare-env create_manual create_db build run_pokemon_client run_pokemon_server
+.PHONY: all prepare-env create_manual create_db build manual_pokemon_server manual_pokemon_client clean run_pokemon_client run_pokemon_server
 
 UNAME_S=$(shell uname -s)
 
@@ -9,11 +9,15 @@ all:
 	@echo "make create_manual"
 	@echo "    Crea los manuales del proyecto."
 	@echo "make create_db"
-	@echo "    Crea el directorio de la base de datos."
+	@echo "    Crea el directorio de la base de datos y la incializa."
 	@echo "make build"
-	@echo "    Creates debian package."
+	@echo "    Construye el proyecto."
 	@echo "make clean"
 	@echo "    Limpia el proyecto y eleimina los archivos generados en el build."
+	@echo "make manual_pokemon_server"
+	@echo "    Abre el manual de Unix del Servidor del Pokemon. (Solo en Linux)"
+	@echo "make manual_pokemon_client"
+	@echo "    Abre el manual de Unix del Clinete del Pokemon. (Solo en Linux)"
 	@echo "make run_pokemon_client"
 	@echo "    Ejecuta el cliente de Pokemon."
 	@echo "make run_pokemon_server"
