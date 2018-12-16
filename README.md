@@ -6,8 +6,14 @@ Redes de computadoras - Facultad de Ciencias, UNAM.
 
 ## Descripción del proyecto
 
-Maik aquí ponle cosas. :squirrel:
-
+Se programó un protocolo para la capa de aplicación que consiste en que un cliente solicita al servidor iniciar el juego de capturar un _Pokémon_. Luego de haber iniciado sesión:
+ * El cliente solicita jugar y el servidor le ofrece aleatoriamente un _pokémon_ a capturar. 
+ * El cliente responde si desea o no proceder a intentar capturar al _pokémon_ en cuestión.
+ * El servidor captura o no al _pokémon_ aleatoriamente y pregunta al cliente en caso de fallo si desea intentarlo nuevamente, decrementando un contador de oportunidades que inicializó antes aleatoriamente en un rango determinado.
+ * En caso de haberlo capturado, el cliente recibe una imagen del _pokémon_ que es guardada en el equipo.
+ * Se termina la sesión y se cierra la conexión.
+ 
+Para la implementación se usó un esquema previamente definido de mensajes y un Autómata Finito Determinista de estados (AFD, _FSM_, _Finite State Machine_). Se pretende _vender_ el protocolo.
 
 ## Entorno
 
@@ -82,7 +88,7 @@ make manual_pokemon_client
 
 # Reporte
 
-En el reporte de se enlazan a lso archivos de los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estaods y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
+En el reporte de se enlazan a lso archivos de los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estados y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
 
 Maik aquí ponle una liga al documento de latex.
 
