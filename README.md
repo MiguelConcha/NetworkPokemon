@@ -1,6 +1,11 @@
 # Proyecto de Redes de Computadoras
 
-Maik aquí ponle cosas. :envelope: :computer:
+:envelope: :computer:
+
+
+* Profesor: Paulo Contreras Flores
+* Ayudante: Virgilio Castro Rendón
+* Laboratorio: José Daniel Campuzano Barajas.
 
 Redes de computadoras - Facultad de Ciencias, UNAM.
 
