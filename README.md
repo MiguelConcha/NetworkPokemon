@@ -96,8 +96,6 @@ make manual_pokemon_client
 
 En el reporte de se enlazan a lso archivos de los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estados y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
 
-Maik aquí ponle una liga al documento de latex.
-
 ## Documentación
 
 La documentación fue hecha con la herramienta 
