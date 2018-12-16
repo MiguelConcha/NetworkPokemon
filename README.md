@@ -2,6 +2,7 @@
 
 :envelope: :computer:
 
+<img width="572" alt="screen shot 2018-12-16 at 10 32 38 am" src="https://user-images.githubusercontent.com/13952922/50056163-fc4b8d80-011d-11e9-8909-dd9ecff385ff.png">
 
 * Profesor: Paulo Contreras Flores
 * Ayudante: Virgilio Castro Rendón
