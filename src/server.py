@@ -496,7 +496,7 @@ def clientthread(conn):
 
 if __name__ == '__main__':
     DB_users = load_obj("db")
-    print(DB_users)
+    #print(DB_users)
 
     server = Server('', 9999)
     server.bind_socket()
