@@ -98,7 +98,7 @@ Se creo dos PDFs de los manuales de Unix en en directorio `manpages`.
 
 # Reporte
 
-En el reporte se describen los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estados y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
+En el [reporte](reporte.pdf) se describen los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estados y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
 
 ## Documentación
 
