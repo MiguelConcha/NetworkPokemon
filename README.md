@@ -92,6 +92,10 @@ make manual_pokemon_server
 make manual_pokemon_client
 ```
 
+---
+
+Se creo dos PDFs de los manuales de Unix en en directorio `manpages`.
+
 # Reporte
 
 En el reporte de se enlazan a lso archivos de los aspectos técnicos de la implementación del protocolo, así como la tabla que detalla los estados y mensajes transmitidos, el FSM y también el documento para la venta de la aplicación; se incluye un apartado que incluye la evidencia con las capturas del tráfico en _Wireshark_.
