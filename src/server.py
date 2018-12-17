@@ -99,7 +99,6 @@ def transmit(conn, message):
       conn: Un objeto socket que es usado para enviar/recibir información
       message: Mensaje o código de envío.
     """
-    print("envio ", message)
     conn.sendall(message)
 
 
@@ -372,7 +371,6 @@ def send_image(conn, pokemon_row):
         pack('B', pokemon_row) + pack_tam + image
     transmit(conn, package)
     f.close()
-    print(package)
 
 
 def send_captured_pokemons(conn, id_user):
@@ -412,7 +410,6 @@ def capture_pokemon(conn, user_id):
             max_attempts = randint(4, 20)
             while not captured and max_attempts > 1:
                 captured = randint(0, 10) == 1
-                print("lo captura", captured)
                 max_attempts -= 1
                 if not captured:
                     send_attempts(conn, max_attempts, pokemon_row)
@@ -427,7 +424,6 @@ def capture_pokemon(conn, user_id):
             elif not captured:
                 terminate(conn)
             else:
-                print("capturado y a terminar")
                 DB_users[user_id]["Catched"].append(DB_pokemon[pokemon_row][0])
                 save_obj(DB_users, "db")
                 # ENVIAR IMAGEN Y REGISTRAR POKEMON
@@ -486,11 +482,8 @@ def clientthread(conn):
 
             # YA SE VA A ACABAR LA CONEXION
             DB_users[user_id]["Active"] = False
-            print("local false", DB_users)
             save_obj(DB_users, "db")
-            print("save false", load_obj("db"))
         elif to_play == NO:
-            print("no quiere jugar")
             # terminate(conn)
             pac = pack('B', 32)
             conn.sendall(pack('B', 32))

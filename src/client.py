@@ -180,7 +180,6 @@ class Client:
         if reply[0] == TIMEOUT:
             print("Ocurrió un timeout en la conexión")
             self.close_connection()
-        print("Recibí respuesta")
         if bytes_2_int(reply) == PASS_NO_MATCH:
             if not first:
                 print("No coincide la contraseña.")
@@ -199,7 +198,6 @@ class Client:
         Pide que se pueda capturar un pokemon.
         """
         self.socket.sendall(pack('B', REQUEST_CAPTURING))
-        print("ya mande solicitud")
         self.receive_pokemon_suggestion()
 
     def receive_pokemon_suggestion(self):
@@ -276,10 +274,8 @@ class Client:
         """
         Muestra un mensaje de que ya envió la imagen.
         """
-        print("voy a enviar")
 
         self.socket.sendall(pack('B', IMAGE_RECEIVED))
-        print("ya envié", str(IMAGE_RECEIVED))
 
     def receive_image(self):
         """
@@ -287,13 +283,11 @@ class Client:
         """
         code = self.socket.recv(1)
         self.verify_img_code(code)
-        print("code", code)
         if code[0] == TIMEOUT:
             print("Ocurrió un timeout en la conexión")
             self.close_connection()
         idpokemon = bytes_2_int(self.socket.recv(1))
         self.verify_pokemon(idpokemon)
-        print("id", idpokemon)
         tam_image = bytes_2_int(self.socket.recv(4))
         #tam_image = self.socket.recv(4)
         f = open(str(idpokemon) + ".png", 'wb')
@@ -316,7 +310,6 @@ class Client:
         Muestra los pokemones capturados del socket.
         """
         reply = self.socket.recv(4096)
-        print(reply)
         # if reply[0] == POKEMON_LIST:
         tp.banner("Pokédex")
         print(reply[1:].decode())
@@ -349,7 +342,6 @@ class Client:
         """
         reply = self.socket.recv(1)
         if bytes_2_int(reply) == TERMINATED_SESSION or bytes_2_int(reply) == TIMEOUT:
-            print(reply)
             print("Sesión terminada: " +
                   ("timeout" if bytes_2_int(reply) == TIMEOUT else ""))
             self.close_connection()
