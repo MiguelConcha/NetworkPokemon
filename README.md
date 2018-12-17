@@ -77,7 +77,7 @@ man pokemon_client
 ```
 
 ```
-man pokemon_servergi
+man pokemon_server
 ```
 
 Encontramos un inconveniente y en diferentes versiones de Linux se ponen en 
